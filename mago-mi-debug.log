@@ -1,0 +1,32 @@
+﻿2393/10/22 16:51:46.0160 WARN Changing log level from 3 to 4
+2393/10/22 16:51:46.0160 DEBUG argv[0]: `mago-mi.exe`
+2393/10/22 16:51:46.0160 DEBUG argv[1]: `vm1.exe`
+2393/10/22 16:51:46.0160 INFO exename is set: C:\Users\marcp\Code\Dlang\vm1\vm1.exe
+2393/10/22 16:51:46.0160 INFO GNU gdb (mago-mi 0.3.3) 7.1.90
+2393/10/22 16:51:46.0160 INFO Executable file: C:\Users\marcp\Code\Dlang\vm1\vm1.exe
+
+2393/10/22 16:51:46.0160 INFO Directory: C:\Users\marcp\Code\Dlang\vm1
+
+2393/10/22 16:51:46.0170 INFO Entering command loop
+2393/10/22 16:51:46.0180 INFO Mode: Console
+2393/10/22 16:51:46.0180 DEBUG STDOUT: =thread-group-added,id="i1"
+2393/10/22 16:51:46.0290 DEBUG STDOUT: GNU gdb (mago-mi 0.3.3) 7.1.90
+2393/10/22 16:51:46.0290 DEBUG STDOUT: (Actually it's mago-mi debugger. Version shows GDB for Eclipse CDT compatibility)
+2393/10/22 16:51:46.0290 DEBUG STDOUT: This is text (gdb MI) interface for Mago debugger: https://github.com/rainers/mago
+2393/10/22 16:51:46.0300 DEBUG STDOUT: Mago-MI project page: https://github.com/buggins/mago
+2393/10/22 16:51:46.0300 DEBUG STDOUT: Developer: Vadim Lopatin <coolreader.org@gmail.com>
+2393/10/22 16:51:46.0300 DEBUG STDOUT: Supports subset of GDB commands. Type help to see list of available commands.
+2393/10/22 16:51:46.0300 DEBUG STDOUT: Starting program: C:\Users\marcp\Code\Dlang\vm1\vm1.exe
+2393/10/22 16:51:46.1730 DEBUG STDOUT: Failed to start debugging of C:\Users\marcp\Code\Dlang\vm1\vm1.exe
+2393/10/22 16:52:00.7500 DEBUG STDIN: q
+2393/10/22 16:52:00.7500 DEBUG STDOUT: unknown command: q
+2393/10/22 16:52:02.1090 DEBUG STDIN: exit
+2393/10/22 16:52:02.1090 DEBUG STDOUT: unknown command: exit
+2393/10/22 16:52:03.8730 DEBUG STDIN: bye
+2393/10/22 16:52:03.8730 DEBUG STDOUT: unknown command: bye
+2393/10/22 16:52:05.7230 DEBUG STDIN: exit
+2393/10/22 16:52:05.7230 DEBUG STDOUT: unknown command: exit
+2393/10/22 16:52:06.8520 DEBUG STDIN: quit
+2393/10/22 16:52:06.8520 INFO quit requested
+2393/10/22 16:52:06.8520 INFO Debugger shutdown
+2393/10/22 16:52:06.8520 INFO Exiting

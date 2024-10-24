@@ -1,0 +1,24 @@
+{
+	"authors": [
+		"marcp"
+	],
+	"buildTypes": {
+		"debug": {
+			"buildOptions": [
+				"debugMode",
+				"debugInfo",
+				"debugInfoC"
+			],
+			"buildOptions-windows": [
+				"debugInfoC"
+			]
+		}
+	},
+	"copyright": "Copyright © 2024, marcp",
+	"dependencies": {
+		"silly": "~>1.1.1"
+	},
+	"description": "A minimal D application.",
+	"license": "proprietary",
+	"name": "vm1"
+}
