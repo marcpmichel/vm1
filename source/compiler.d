@@ -66,7 +66,7 @@ class Compiler {
         return cast(ushort)code.bytes.length;
     }
 
-    void patchAddr(ushort offset, ushort addr) {
+    void patchAddr(size_t offset, ushort addr) {
         code.bytes[offset] = (addr << 8) & 0xFF;
         code.bytes[offset+1] = (addr) & 0xFF;
         import std.stdio: writeln; writeln("patching addr ",addr," at offet ", offset);
@@ -81,16 +81,33 @@ class Compiler {
                 genKeyword(symExpr.keyword, listExpr);
             break;
             case SymType.Identifier:
-                // find local var first
-                if(code.isLocalVar(symExpr.str)) {
-                    ubyte idx = cast(ubyte)code.getLocalVarIndex(symExpr.str);
-                    emit(Op.GetLocal);
-                    emit(idx);
+                if(listExpr !is null) {
+                    // check if it is a function call
+                    if(!globals.exists(symExpr.str)) compilationError("reference error : undefined " ~ symExpr.str);
+                    Var v = globals.get(globals.index(symExpr.str));
+                    if(isNative(v.value)) {
+                        // TODO: check arity
+                        Native n = v.value.native;
+                        if(listExpr.argsCount != n.arity) compilationError("arity error: wrong number of arguments");
+                        genCall(listExpr);
+                    }
+                    else {
+                        compilationError("not a native function : " ~ symExpr.str);
+                    }
                 }
                 else {
-                    if(!globals.exists(symExpr.str)) throw new CompilationError("reference error : cannot find var " ~ symExpr.str);
-                    emit(Op.GetGlobal);
-                    emit(cast(ubyte)globals.index(symExpr.str));
+                    // check if it is a global var or a local val
+                    // find local var first
+                    if(code.isLocalVar(symExpr.str)) {
+                        ubyte idx = cast(ubyte)code.getLocalVarIndex(symExpr.str);
+                        emit(Op.GetLocal);
+                        emit(idx);
+                    }
+                    else {
+                        if(!globals.exists(symExpr.str)) compilationError("reference error : undefined " ~ symExpr.str);
+                        emit(Op.GetGlobal);
+                        emit(cast(ubyte)globals.index(symExpr.str));
+                    }
                 }
             break;
             default:
@@ -156,6 +173,14 @@ class Compiler {
                 gen(last);
                 scopeExit();
             break;
+            case Keyword.While:
+                scopeEnter();
+                checkArgs(listExpr, 2);
+                auto condExpr = listExpr.list[1];
+                auto bodyExpr = listExpr.list[2];
+                genKeywordWhile(condExpr, bodyExpr);
+                scopeExit();
+            break;
             default:
                 compilationError("unknown keyword");
             break;
@@ -184,6 +209,21 @@ class Compiler {
 
     }
 
+    void genKeywordWhile(Expression cond, Expression body) {
+        auto loopStartAddr = currentOffset();
+        gen(cond);
+        emit(Op.Branch);
+
+        auto loopEndAddr = currentOffset();
+        emit(0); emit(0);
+        gen(body);
+
+        emit(Op.Jump);
+        emit(0); emit(0);
+        patchAddr(currentOffset() - 2, loopStartAddr);
+        patchAddr(loopEndAddr, cast(ushort)(currentOffset()+1));
+    }
+
     void genOpExp(SymbolExpression sym, ListExpression listExpr) {
         switch(sym.op) {
             case Op.Add, Op.Sub, Op.Mul, Op.Div:
@@ -198,6 +238,15 @@ class Compiler {
                 compilationError("unknown symbol '" ~ sym.str ~ "'");
             break;
         }
+    }
+
+    void genCall(ListExpression listExpr) {
+        checkArgs(listExpr, 0);
+        gen(listExpr.list[0]); // fetch NativeValue and push onto the stack
+        // arguments:
+        foreach(argExpr; listExpr.args) { gen(argExpr); }
+        emit(Op.Call);
+        emit(listExpr.argsCount);
     }
 
     void genBinaryOp(Op op, Expression a, Expression b) {
@@ -240,7 +289,7 @@ class Compiler {
 
     void checkArgs(ListExpression listExpr, uint n) {
         if(n == 0) return;
-        if(listExpr && listExpr.list.length > n) return;
+        if(listExpr !is null && listExpr.list.length > n) return;
         throw new CompilationError("wrong number of arguments");
     }
 
@@ -248,8 +297,9 @@ class Compiler {
         code.scopeLevel++;
     }
     void scopeExit() {
-        uint localVarsCount = code.wipeCurrentScopeLocalVars();
+        uint localVarsCount = code.countCurrentScopeLocalVars();
         if(localVarsCount > 0) {
+            code.wipeCurrentScopeLocalVars();
             emit(Op.ScopeExit);
             emit(cast(ubyte)localVarsCount);
         }

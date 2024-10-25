@@ -33,12 +33,13 @@ class StringExpression : Expression {
 }
 
 enum SymType { Error, Identifier, Operator, Keyword }
-enum Keyword { Unknown, If, Var, Set, Begin }
+enum Keyword { Unknown, If, Var, Set, Begin, While }
 Keyword[string] keywords = [
   "if": Keyword.If,
   "var": Keyword.Var,
   "set": Keyword.Set,
-  "begin": Keyword.Begin
+  "begin": Keyword.Begin,
+  "while": Keyword.While,
 ];
 
 class SymbolExpression: Expression {
@@ -88,6 +89,12 @@ class ListExpression: Expression {
   void add(Expression e) {
     this.list ~= e;
   }
+
+  ubyte argsCount() { return cast(ubyte)((list.length < 2) ? 0 : list.length-1); }
+
+  Expression[] args() { return list[1..$]; }
+  Expression arg(uint nth) { return list[nth]; }
+
   override string toString() {
     import std.format: format;
     return format("List(len:%d) => %s", list.length, list);

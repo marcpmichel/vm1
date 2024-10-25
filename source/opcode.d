@@ -22,4 +22,5 @@ enum Op {
   SetLocal,
   GetLocal,
   ScopeExit,
+  Call,
 }

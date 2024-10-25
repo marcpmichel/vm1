@@ -14,22 +14,13 @@ bool error;
 int main() {
 
 	Globals globals = new Globals;
-	globals.define("VERSION", IntValue(1));
+
+	auto vm = new VM(globals); // initialize the vm to set the default constants and functions
 
 	string program = `
-		(var x 5)
-		(set x (+ x 10))
-
-		x
-
-		(begin
+		(if (= (square 3) 9)
 			(var x 100)
-			(begin
-				(var x 200)
-				x)
-			x)
-
-		x
+			(sum x 1))
 	`;
 	// string program = "(< 2 12)";
 	// string program = `(+ 12 (/ 6 1))"`;
@@ -54,7 +45,6 @@ int main() {
 	}
 	if(error) return 1;
 
-
 	writeln("### compiling...");
 	auto compiler = new Compiler(globals);
 	Value codevalue;
@@ -78,7 +68,6 @@ int main() {
 	decompiler.decompile(codevalue.code);
 
 	writeln("### running...");
-	auto vm = new VM(globals);
 	try {
 		Value res = vm.exec(codevalue.code);
 		print(res);

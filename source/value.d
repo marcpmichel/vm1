@@ -1,7 +1,6 @@
 module value;
 import errors;
 
-enum ValType { Error, Bool, Int, Float, String, Code }
 
 struct LocalVar {
     string name;
@@ -21,15 +20,16 @@ class Code {
     this.name = name;
   }
 
-  uint wipeCurrentScopeLocalVars() {
-    import std.algorithm.searching: count;
+  void wipeCurrentScopeLocalVars() {
     import std.algorithm.mutation: remove;
-    uint nb = cast(uint)locals.count!(v => v.scopeLevel == this.scopeLevel);
-    locals.remove!(v => v.scopeLevel == this.scopeLevel);
-    return nb;
+    locals = locals.remove!(v => v.scopeLevel == this.scopeLevel);
+  }
+  uint countCurrentScopeLocalVars() {
+    import std.algorithm.searching: count;
+    return cast(uint)locals.count!(v => v.scopeLevel == this.scopeLevel);
   }
   void addLocalVar(string varname) {
-    locals  ~= LocalVar(varname, scopeLevel);
+    locals ~= LocalVar(varname, scopeLevel);
   }
   size_t isLocalVar(string varname) {
     import std.algorithm.searching: canFind;
@@ -37,14 +37,29 @@ class Code {
   }
   size_t getLocalVarIndex(string varname) {
     import std.algorithm.searching: countUntil;
-    import std.format: format;
     size_t idx = locals.countUntil!(v => v.name == varname);
     if(idx < locals.length) return idx;
+    import std.format: format;
     referenceError(format("cannot find local var '%s'", varname));
     assert(false);
   }
 
 }
+
+alias NativeFn = void delegate();
+class Native {
+  NativeFn fun;
+  string name;
+  size_t arity;
+  this(string name, NativeFn fun, size_t arity) {
+    this.name = name;
+    this.fun = fun;
+    this.arity = arity;
+  }
+}
+
+
+enum ValType { Error, Bool, Int, Float, String, Code, Native }
 
 struct Value {
   ValType type;
@@ -54,6 +69,7 @@ struct Value {
     float f;
     string s;
     Code code;
+    Native native;
   }
 }
 
@@ -62,12 +78,14 @@ float asFloat(Value v) { return v.f; }
 string asString(Value v) { return v.s; }
 bool asBool(Value v) { return v.b; }
 Code asCode(Value v) { return v.code; }
+Native asNative(Value v) { return v.native; }
 
 bool isInt(Value v) { return v.type == ValType.Int; }
 bool isFloat(Value v) { return v.type == ValType.Float; }
 bool isString(Value v) { return v.type == ValType.String; }
 bool isCode(Value v) { return v.type == ValType.Code; }
 bool isBool(Value v) { return v.type == ValType.Bool; }
+bool isNative(Value v) { return v.type == ValType.Native; }
 
 Value IntValue(int i) {
   return Value(ValType.Int, i:i);
@@ -83,6 +101,9 @@ Value CodeValue(Code code) {
 }
 Value BoolValue(bool b) {
   return Value(ValType.Bool, b: b);
+}
+Value NativeValue(Native native) {
+  return Value(ValType.Native, native: native);
 }
 
 void print(Value v) {

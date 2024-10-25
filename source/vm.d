@@ -16,6 +16,8 @@ class VM {
 
 	this(Globals globals) {
 		this.globals = globals;
+		this.addDefaultGlobals();
+		this.addNativeFunctions();
 	}
 
 	void runtimeError(string errmsg) {
@@ -193,6 +195,21 @@ class VM {
 					}
 				break;
 
+				case Op.Call:
+					auto argsCount = read_byte();
+					Value fnValue = peek(argsCount);
+					if(isNative(fnValue)) {
+						Native nat = asNative(fnValue);
+						nat.fun();
+						auto res = pop();
+						popCount(argsCount + 1 /* fn */ );
+						push(res);
+					}
+					else {
+						runtimeError("user-defined function not yet supported");
+					}
+				break;
+
 				default: 
 					runtimeError(format("invalid opcode %s", opcode));
 				break;
@@ -203,6 +220,25 @@ class VM {
 	string[] traces;
 	void trace(string s) {
 		traces ~= s;
+	}
+
+	void nativeSquare() {
+		auto x = asInt(peek(0)); 
+		push(IntValue(x*x));
+	}
+
+
+	void addDefaultGlobals() {
+		globals.define("VERSION", IntValue(1));
+	}
+
+	void addNativeFunctions() {
+		globals.addNativeFunction( "square", (){ auto x=asInt(peek(0)); push(IntValue(x*x)); }, 1);
+		globals.addNativeFunction( "sum", (){ 
+			auto a=asInt(peek(0)); 
+			auto b=asInt(peek(1)); 
+			push(IntValue(a+b)); 
+		}, 2);
 	}
 
 }

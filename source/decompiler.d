@@ -42,6 +42,7 @@ class Decompiler {
             case Op.ScopeExit: return decompileWord(code, offset, opcode);
             case Op.SetLocal: return decompileLocal(code, offset, opcode);
             case Op.GetLocal: return decompileLocal(code, offset, opcode);
+            case Op.Call: return decompileGlobal(code, offset, opcode);
             default: decompileError(format("cannot decompile %s", opcode));
         }
         assert(false,"impossible");
@@ -80,8 +81,8 @@ class Decompiler {
     ulong decompileLocal(Code code, ulong offset, Op opcode) {
         ubyte idx = code.bytes[offset+1];
         write(format("%02X %02X    ", code.bytes[offset], idx));
-        auto localVar = code.locals[idx];
-        write(format("%-10s %02X (%s)", opcode, idx, localVar.name));
+        // auto localVar = code.locals[idx];
+        write(format("%-10s %02X (%s)", opcode, idx, idx /*localVar.name*/));
         return offset+2;
     }
 
